@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>AIQUILIBRIUM.COM</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
     html, body {
       margin: 0;
@@ -20,15 +20,15 @@
       color: #00ffff;
       z-index: 10;
     }
-    #overlay h1 {
+    h1 {
       font-size: 2.5em;
       text-shadow: 0 0 10px #00ffff;
     }
-    #overlay p {
+    p {
       color: #ccc;
+      font-size: 1em;
       max-width: 600px;
       margin: 20px auto;
-      font-size: 1em;
     }
     .btn {
       background: #00ffff;
@@ -39,14 +39,17 @@
       cursor: pointer;
       border-radius: 20px;
       box-shadow: 0 0 15px #00ffff;
-      transition: transform 0.2s ease;
       text-decoration: none;
+      transition: transform 0.2s ease;
     }
     .btn:hover {
       transform: scale(1.05);
     }
     canvas {
       display: block;
+      position: fixed;
+      top: 0;
+      left: 0;
     }
   </style>
 </head>
@@ -70,15 +73,11 @@
       vec2 st = gl_FragCoord.xy / vec2(window.innerWidth, window.innerHeight);
       vec2 m = u_mouse / vec2(window.innerWidth, window.innerHeight);
       float dist = distance(st, m);
-      float intensity = pow(0.01 / dist, 1.5);
-      vec3 glow = vec3(0.0, 0.8, 1.0) * intensity;
+      float glow = 0.01 / (dist + 0.001);
+      glow *= sin(u_time * 5.0 + dist * 40.0);
+      vec3 color = vec3(0.0, 0.7, 1.0) * glow;
 
-      // Twisting shimmer
-      float wave = sin(u_time * 2.0 + dist * 40.0) * 0.1;
-      glow.r += wave * 0.2;
-      glow.g += wave * 0.1;
-
-      gl_FragColor = vec4(glow, 1.0);
+      gl_FragColor = vec4(color, 1.0);
     }
   </script>
 
