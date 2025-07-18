@@ -1,15 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>AIQUILIBRIUM.COM</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     html, body {
       margin: 0;
-      padding: 0;
       overflow: hidden;
       font-family: 'Orbitron', sans-serif;
+      background: black;
     }
     #overlay {
       position: absolute;
@@ -41,7 +41,6 @@
       box-shadow: 0 0 15px #00ffff;
       transition: transform 0.2s ease;
       text-decoration: none;
-      display: inline-block;
     }
     .btn:hover {
       transform: scale(1.05);
@@ -66,33 +65,41 @@
   <script id="fragShader" type="x-shader/x-fragment">
     uniform vec2 u_mouse;
     uniform float u_time;
+
     void main() {
       vec2 st = gl_FragCoord.xy / vec2(window.innerWidth, window.innerHeight);
       vec2 m = u_mouse / vec2(window.innerWidth, window.innerHeight);
       float dist = distance(st, m);
-      float intensity = 0.15 / dist;
-      vec3 color = vec3(0.1, 0.2, 0.3) + intensity * vec3(0.5, 0.9, 1.0);
-      gl_FragColor = vec4(color, 1.0);
+      float intensity = pow(0.01 / dist, 1.5);
+      vec3 glow = vec3(0.0, 0.8, 1.0) * intensity;
+
+      // Twisting shimmer
+      float wave = sin(u_time * 2.0 + dist * 40.0) * 0.1;
+      glow.r += wave * 0.2;
+      glow.g += wave * 0.1;
+
+      gl_FragColor = vec4(glow, 1.0);
     }
   </script>
+
   <script>
     let scene = new THREE.Scene();
     let camera = new THREE.Camera();
-    let renderer = new THREE.WebGLRenderer();
+    let renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.body.appendChild(renderer.domElement);
 
     let uniforms = {
-      u_time: { type: "f", value: 0.0 },
-      u_mouse: { type: "v2", value: new THREE.Vector2() }
+      u_time: { value: 0.0 },
+      u_mouse: { value: new THREE.Vector2(0.5, 0.5) }
     };
 
-    let geometry = new THREE.PlaneBufferGeometry(2, 2);
     let material = new THREE.ShaderMaterial({
       uniforms: uniforms,
-      fragmentShader: document.getElementById("fragShader").textContent
+      fragmentShader: document.getElementById('fragShader').textContent
     });
 
+    let geometry = new THREE.PlaneBufferGeometry(2, 2);
     let mesh = new THREE.Mesh(geometry, material);
     scene.add(mesh);
 
@@ -106,6 +113,7 @@
       uniforms.u_time.value += 0.01;
       renderer.render(scene, camera);
     }
+
     animate();
   </script>
 </body>
