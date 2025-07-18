@@ -2,87 +2,111 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>AIQUILIBRIUM.COM</title>
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
-    * {
+    html, body {
       margin: 0;
       padding: 0;
-      box-sizing: border-box;
-    }
-
-    body, html {
-      height: 100%;
-      width: 100%;
+      overflow: hidden;
       font-family: 'Orbitron', sans-serif;
-      color: #00f7ff;
-      background: url('https://cdn.midjourney.com/5a5e0e1e-4714-4a4c-9301-f36fc647fa5c/0_1.png') no-repeat center center fixed;
-      background-size: cover;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+    }
+    #overlay {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
       text-align: center;
-      backdrop-filter: brightness(1.1);
+      color: #00ffff;
+      z-index: 10;
     }
-
-    .content {
-      background: rgba(0, 0, 0, 0.65);
-      padding: 40px 30px;
-      border-radius: 20px;
-      box-shadow: 0 0 40px rgba(0, 255, 255, 0.4);
-      max-width: 700px;
-      width: 90%;
+    #overlay h1 {
+      font-size: 2.5em;
+      text-shadow: 0 0 10px #00ffff;
     }
-
-    h1 {
-      font-size: 2.6rem;
-      letter-spacing: 3px;
-      text-shadow: 0 0 10px #00f7ff;
+    #overlay p {
+      color: #ccc;
+      max-width: 600px;
+      margin: 20px auto;
+      font-size: 1em;
     }
-
-    p {
-      font-size: 1.1rem;
-      margin-top: 20px;
-      line-height: 1.6;
-      color: #e0ffff;
-    }
-
     .btn {
-      display: inline-block;
-      margin-top: 30px;
-      padding: 12px 30px;
-      background: linear-gradient(145deg, #00f7ff, #005e7a);
+      background: #00ffff;
       border: none;
-      border-radius: 30px;
-      color: black;
+      padding: 12px 20px;
       font-weight: bold;
-      font-size: 1rem;
-      box-shadow: 0 0 20px #00f7ff;
+      color: black;
       cursor: pointer;
+      border-radius: 20px;
+      box-shadow: 0 0 15px #00ffff;
+      transition: transform 0.2s ease;
       text-decoration: none;
-      transition: transform 0.2s ease-in-out;
+      display: inline-block;
     }
-
     .btn:hover {
       transform: scale(1.05);
     }
-
-    @media (max-width: 600px) {
-      h1 { font-size: 2rem; }
-      p { font-size: 1rem; }
+    canvas {
+      display: block;
     }
   </style>
 </head>
 <body>
-  <div class="content">
+  <div id="overlay">
     <h1>AIQUILIBRIUM.COM</h1>
     <p>
-      Where intelligence meets balance.<br>
-      A premium domain for next-gen AI, built for those who believe<br>
+      Where intelligence meets balance.<br />
+      A premium domain for next-gen AI, built for those who believe<br />
       in harmony over chaos, clarity over complexity.
     </p>
-    <a href="https://www.afternic.com/domain/aiquilibrium.com" class="btn">ENTER THE BALANCE</a>
+    <a class="btn" href="https://www.afternic.com/domain/aiquilibrium.com" target="_blank">ENTER THE BALANCE</a>
   </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script id="fragShader" type="x-shader/x-fragment">
+    uniform vec2 u_mouse;
+    uniform float u_time;
+    void main() {
+      vec2 st = gl_FragCoord.xy / vec2(window.innerWidth, window.innerHeight);
+      vec2 m = u_mouse / vec2(window.innerWidth, window.innerHeight);
+      float dist = distance(st, m);
+      float intensity = 0.15 / dist;
+      vec3 color = vec3(0.1, 0.2, 0.3) + intensity * vec3(0.5, 0.9, 1.0);
+      gl_FragColor = vec4(color, 1.0);
+    }
+  </script>
+  <script>
+    let scene = new THREE.Scene();
+    let camera = new THREE.Camera();
+    let renderer = new THREE.WebGLRenderer();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
+
+    let uniforms = {
+      u_time: { type: "f", value: 0.0 },
+      u_mouse: { type: "v2", value: new THREE.Vector2() }
+    };
+
+    let geometry = new THREE.PlaneBufferGeometry(2, 2);
+    let material = new THREE.ShaderMaterial({
+      uniforms: uniforms,
+      fragmentShader: document.getElementById("fragShader").textContent
+    });
+
+    let mesh = new THREE.Mesh(geometry, material);
+    scene.add(mesh);
+
+    document.addEventListener("mousemove", (e) => {
+      uniforms.u_mouse.value.x = e.clientX;
+      uniforms.u_mouse.value.y = window.innerHeight - e.clientY;
+    });
+
+    function animate() {
+      requestAnimationFrame(animate);
+      uniforms.u_time.value += 0.01;
+      renderer.render(scene, camera);
+    }
+    animate();
+  </script>
 </body>
 </html>
